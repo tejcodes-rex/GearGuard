@@ -117,18 +117,21 @@ export default function RequestDetailPage() {
 
         // Mock API Latency
         setTimeout(() => {
-            const finalRequest = {
-                ...formData,
-                status: formData.status || 'New',
-                priority: formData.priority || '0',
-                createdAt: new Date().toISOString()
-            };
-
-            // In a real app, this would be an API call
             if (isNew) {
-                addRequest(finalRequest);
+                // Ensure we strip ID and CreatedAt for new requests
+                const { id, createdAt, ...newReqData } = formData;
+                addRequest({
+                    ...newReqData,
+                    status: formData.status || 'New',
+                    priority: formData.priority || '0',
+                    maintenanceFor: formData.maintenanceFor || 'equipment'
+                } as any);
             } else {
-                updateRequest(request.id, finalRequest);
+                updateRequest(request.id, {
+                    ...formData,
+                    status: formData.status || request.status,
+                    priority: formData.priority || request.priority
+                });
             }
 
             showToast(isNew ? "Request created successfully" : "Request updated successfully", "success");
@@ -264,19 +267,19 @@ export default function RequestDetailPage() {
                     <div className="flex items-center gap-2" title="Kanban State">
                         <button
                             onClick={() => isEditing && handleChange('kanbanState', 'normal')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'normal' || !request.kanbanState ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'normal' || !(isEditing ? formData.kanbanState : request.kanbanState) ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="In Progress"
                             disabled={!isEditing}
                         />
                         <button
                             onClick={() => isEditing && handleChange('kanbanState', 'blocked')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="Blocked"
                             disabled={!isEditing}
                         />
                         <button
                             onClick={() => isEditing && handleChange('kanbanState', 'done')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="Ready for Next Stage"
                             disabled={!isEditing}
                         />
