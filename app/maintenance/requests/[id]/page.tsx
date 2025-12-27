@@ -84,13 +84,9 @@ export default function RequestDetailPage() {
             if (!confirmScrap) return;
         }
 
-        if (isNew) {
-            setFormData(prev => ({ ...prev, status: stage }));
-            setRequest(prev => prev ? ({ ...prev, status: stage }) : null);
-        } else {
-            updateRequest(request.id, { status: stage });
-            showToast(`Status updated to ${stage}`, "success");
-        }
+        // Fix: Update local formData state instead of triggering immediate global update.
+        // This prevents the useEffect from re-syncing and wiping other unsaved changes.
+        setFormData(prev => ({ ...prev, status: stage }));
     };
 
     // In Explicit Save Mode, we ONLY update local state.
@@ -244,8 +240,10 @@ export default function RequestDetailPage() {
                     {/* States Widget */}
                     <div className="flex items-center overflow-x-auto max-w-full">
                         {STAGES.map((stage, idx) => {
-                            const isActive = request.status === stage;
-                            const isPast = STAGES.indexOf(request.status) > idx;
+                            // Use local formData if editing, otherwise committed request status
+                            const currentStatus = isEditing ? (formData.status || request.status) : request.status;
+                            const isActive = currentStatus === stage;
+                            const isPast = STAGES.indexOf(currentStatus) > idx;
 
                             return (
                                 <button
