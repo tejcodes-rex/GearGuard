@@ -1,11 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { useApp } from "@/context/AppDataContext";
 import { Search, Filter, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function EquipmentPage() {
-    const { equipment } = useApp();
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredEquipment = equipment.filter(eq =>
+        eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        eq.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        eq.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        eq.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="p-6 space-y-6">
@@ -26,6 +34,8 @@ export default function EquipmentPage() {
                         <input
                             type="text"
                             placeholder="Search equipment..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                         />
                     </div>
@@ -42,19 +52,27 @@ export default function EquipmentPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {equipment.map((eq) => (
-                            <tr key={eq.id} className="hover:bg-slate-50 transition">
-                                <td className="px-6 py-3 font-medium text-slate-900">{eq.name}</td>
-                                <td className="px-6 py-3 text-slate-600">{eq.serialNumber}</td>
-                                <td className="px-6 py-3 text-slate-600">{eq.category}</td>
-                                <td className="px-6 py-3">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${eq.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {eq.status}
-                                    </span>
+                        {filteredEquipment.length > 0 ? (
+                            filteredEquipment.map((eq) => (
+                                <tr key={eq.id} className="hover:bg-slate-50 transition">
+                                    <td className="px-6 py-3 font-medium text-slate-900">{eq.name}</td>
+                                    <td className="px-6 py-3 text-slate-600">{eq.serialNumber}</td>
+                                    <td className="px-6 py-3 text-slate-600">{eq.category}</td>
+                                    <td className="px-6 py-3">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${eq.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {eq.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-3 text-slate-600">{eq.location}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">
+                                    No equipment found matching "{searchTerm}"
                                 </td>
-                                <td className="px-6 py-3 text-slate-600">{eq.location}</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>

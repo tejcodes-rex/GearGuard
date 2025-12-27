@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { useApp } from "@/context/AppDataContext";
 import { RequestStatus } from "@/types";
-import { Plus, Clock, User } from "lucide-react";
+import { Plus, Clock, User, Search } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -14,14 +14,21 @@ const COLUMNS: RequestStatus[] = ["New", "In Progress", "Repaired", "Scrap"];
 function KanbanBoard() {
     const { requests, updateRequest, getTeamById, getEquipmentById, getWorkCenterById, getMemberById } = useApp();
     const searchParams = useSearchParams();
+    const [searchTerm, setSearchTerm] = useState("");
     const [isBrowser, setIsBrowser] = useState(false);
 
-    // Filter Logic
+    useEffect(() => {
+        setIsBrowser(true);
+    }, []);
+
     // Filter Logic
     const equipmentIdFilter = searchParams.get("equipmentId");
     const filterType = searchParams.get("filter");
 
-    let filteredRequests = requests;
+    let filteredRequests = requests.filter(r =>
+        r.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     if (equipmentIdFilter) {
         filteredRequests = filteredRequests.filter(r => r.equipmentId === equipmentIdFilter);
@@ -58,19 +65,34 @@ function KanbanBoard() {
     return (
         <div className="h-full flex flex-col">
             <div className="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Maintenance Requests</h1>
-                    {equipmentIdFilter && <p className="text-sm text-slate-500">Filtered by Equipment ID: {equipmentIdFilter}</p>}
-                    {filterType === 'critical' && <p className="text-sm text-red-600 font-medium">Filtered by: Critical Priority</p>}
-                    {filterType === 'todo' && <p className="text-sm text-slate-500">Filtered by: To Do</p>}
+                <div className="flex-1">
+                    <h1 className="text-2xl font-bold text-slate-900 leading-tight">Maintenance Requests</h1>
+                    <div className="flex items-center gap-4 mt-1">
+                        {equipmentIdFilter && <p className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded border">Equipment: {equipmentIdFilter}</p>}
+                        {filterType === 'critical' && <p className="text-xs text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-100">Critical Priority</p>}
+                        {filterType === 'todo' && <p className="text-xs text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded border">To Do List</p>}
+                    </div>
                 </div>
-                <Link
-                    href="/maintenance/requests/new"
-                    className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700"
-                >
-                    <Plus className="h-4 w-4" />
-                    New Request
-                </Link>
+
+                <div className="flex items-center gap-3">
+                    <div className="relative w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search requests..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm transition-all"
+                        />
+                    </div>
+                    <Link
+                        href="/maintenance/requests/new"
+                        className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-purple-200 hover:bg-purple-700 hover:shadow-purple-300 transition-all active:scale-95"
+                    >
+                        <Plus className="h-4 w-4" />
+                        New Request
+                    </Link>
+                </div>
             </div>
 
             <div className="flex-1 overflow-x-auto pb-4">
