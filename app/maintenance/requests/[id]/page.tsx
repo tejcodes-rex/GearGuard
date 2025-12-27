@@ -126,19 +126,12 @@ export default function RequestDetailPage() {
 
             // In a real app, this would be an API call
             if (isNew) {
-                // @ts-ignore - Context helper needs robust type, but valid for mock
-                // We need to pass mock object that matches Partial<MaintenanceRequest>
-                // Actually Context expects Omit<MaintenanceRequest, "id" | "createdAt">
-                // But for this hackathon speed let's just use what we have, logic is fine
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                updateRequest('new', finalRequest); // Abuse update for creating in mock context if needed, OR call addRequest
-                // Wait, Context has addRequest. Let's use it properly.
+                addRequest(finalRequest);
+            } else {
+                updateRequest(request.id, finalRequest);
             }
 
-            // Since addRequest isn't available in the destructured props above, let's fix that first.
-            // Actually, let's just fix the destructuring in the component first.
-            showToast("Request created successfully", "success");
+            showToast(isNew ? "Request created successfully" : "Request updated successfully", "success");
             router.push("/maintenance/kanban");
             setIsSaving(false);
         }, 800);
