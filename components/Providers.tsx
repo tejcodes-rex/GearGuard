@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { TopNav } from "@/components/TopNav";
+import { ToastProvider } from "@/components/Toast";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated } = useAuth();
@@ -61,11 +62,13 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <AuthProvider>
-            <AppProvider>
-                <AuthGuard>
-                    {children}
-                </AuthGuard>
-            </AppProvider>
+            <ToastProvider>
+                <AppProvider>
+                    <AuthGuard>
+                        {children}
+                    </AuthGuard>
+                </AppProvider>
+            </ToastProvider>
         </AuthProvider>
     );
 }
