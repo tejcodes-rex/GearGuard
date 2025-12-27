@@ -61,4 +61,12 @@ export interface MaintenanceRequest {
   description?: string;
   priority?: '0' | '1' | '2' | '3';
   kanbanState?: 'normal' | 'blocked' | 'done';
+  worksheetEntries?: WorksheetEntry[];
+}
+
+export interface WorksheetEntry {
+  id: string;
+  text: string;
+  createdAt: string;
+  author: string;
 }

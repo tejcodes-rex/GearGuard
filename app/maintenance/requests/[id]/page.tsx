@@ -75,6 +75,9 @@ export default function RequestDetailPage() {
 
     // Handlers
     const handleStageClick = (stage: RequestStatus) => {
+        // Strict Mode: Cannot change stage unless in Edit Mode
+        if (!isEditing) return;
+
         // Industry Grade: Safety Check for Destructive Actions
         if (stage === 'Scrap' && request?.status !== 'Scrap') {
             const confirmScrap = window.confirm("⚠️ Are you sure you want to SCRAP this equipment? This will permanently mark the equipment as active wreck/scrap.");
@@ -248,11 +251,13 @@ export default function RequestDetailPage() {
                                 <button
                                     key={stage}
                                     onClick={() => handleStageClick(stage)}
+                                    disabled={!isEditing}
                                     className={`
-                                        whitespace-nowrap relative px-4 py-2 text-sm font-medium border-y border-r border-slate-200 first:border-l first:rounded-l-lg last:rounded-r-lg
+                                        whitespace-nowrap relative px-4 py-2 text-sm font-medium border-y border-r border-slate-200 first:border-l first:rounded-l-lg last:rounded-r-lg transition-all
                                         ${isActive ? 'bg-purple-600 text-white border-purple-600 z-10' : ''}
                                         ${isPast ? 'bg-purple-50 text-purple-700' : ''}
                                         ${!isActive && !isPast ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : ''}
+                                        ${!isEditing ? 'opacity-60 cursor-not-allowed hover:bg-inherit' : 'cursor-pointer'}
                                     `}
                                 >
                                     {stage}
@@ -267,19 +272,22 @@ export default function RequestDetailPage() {
                     {/* Kanban State Indicators */}
                     <div className="flex items-center gap-2" title="Kanban State">
                         <button
-                            onClick={() => handleChange('kanbanState', 'normal')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'normal' || !request.kanbanState ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'}`}
+                            onClick={() => isEditing && handleChange('kanbanState', 'normal')}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'normal' || !request.kanbanState ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="In Progress"
+                            disabled={!isEditing}
                         />
                         <button
-                            onClick={() => handleChange('kanbanState', 'blocked')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'}`}
+                            onClick={() => isEditing && handleChange('kanbanState', 'blocked')}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="Blocked"
+                            disabled={!isEditing}
                         />
                         <button
-                            onClick={() => handleChange('kanbanState', 'done')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'}`}
+                            onClick={() => isEditing && handleChange('kanbanState', 'done')}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
                             title="Ready for Next Stage"
+                            disabled={!isEditing}
                         />
                     </div>
                 </div>
@@ -289,9 +297,81 @@ export default function RequestDetailPage() {
             {showWorksheet && (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 animate-in slide-in-from-top-2">
                     <h3 className="font-bold text-slate-900 mb-4">Worksheet & Comments</h3>
-                    <div className="h-32 bg-white rounded border border-slate-200 p-4 text-slate-400 italic">
-                        No worksheet entries yet.
+
+                    {/* Entry List */}
+                    <div className="space-y-4 mb-4 max-h-60 overflow-y-auto">
+                        {formData.worksheetEntries && formData.worksheetEntries.length > 0 ? (
+                            formData.worksheetEntries.map((entry) => (
+                                <div key={entry.id} className="bg-white p-3 rounded border border-slate-200 shadow-sm text-sm">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="font-semibold text-slate-700">{entry.author}</span>
+                                        <span className="text-xs text-slate-400">{new Date(entry.createdAt).toLocaleString()}</span>
+                                    </div>
+                                    <p className="text-slate-600">{entry.text}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="h-20 flex items-center justify-center bg-white rounded border border-slate-200 text-slate-400 italic text-sm">
+                                No entries yet.
+                            </div>
+                        )}
                     </div>
+
+                    {/* Add Entry Input */}
+                    {isEditing && (
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Log an activity or observation..."
+                                className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const val = (e.target as HTMLInputElement).value;
+                                        if (!val.trim()) return;
+
+                                        const newEntry = {
+                                            id: crypto.randomUUID(),
+                                            text: val,
+                                            createdAt: new Date().toISOString(),
+                                            author: 'Mitchell Admin' // Mock User
+                                        };
+
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            worksheetEntries: [...(prev.worksheetEntries || []), newEntry]
+                                        }));
+                                        (e.target as HTMLInputElement).value = '';
+                                    }
+                                }}
+                            />
+                            <button
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700"
+                                onClick={(e) => {
+                                    const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                    const val = input.value;
+                                    if (!val.trim()) return;
+
+                                    const newEntry = {
+                                        id: crypto.randomUUID(),
+                                        text: val,
+                                        createdAt: new Date().toISOString(),
+                                        author: 'Mitchell Admin'
+                                    };
+
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        worksheetEntries: [...(prev.worksheetEntries || []), newEntry]
+                                    }));
+                                    input.value = '';
+                                }}
+                            >
+                                Add
+                            </button>
+                        </div>
+                    )}
+                    {!isEditing && (
+                        <p className="text-xs text-slate-500 mt-2 text-center">Enable Edit Mode to add entries.</p>
+                    )}
                 </div>
             )}
 
