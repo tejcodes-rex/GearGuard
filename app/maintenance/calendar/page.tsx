@@ -1,12 +1,14 @@
 "use client";
 
 import { useApp } from "@/context/AppDataContext";
-import { ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, User, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CalendarPage() {
     const { requests } = useApp();
+    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
 
     // Calendar Logic
@@ -40,6 +42,12 @@ export default function CalendarPage() {
             const d = new Date(req.scheduledDate);
             return d.getDate() === day && d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
         });
+    };
+
+    const handleDayClick = (day: number) => {
+        const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        router.push(`/maintenance/requests/new?date=${dateStr}T10:00:00`);
     };
 
     return (
@@ -80,17 +88,26 @@ export default function CalendarPage() {
                         const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
 
                         return (
-                            <div key={day} className={`bg-white relative p-2 min-h-[100px] hover:bg-slate-50 transition group flex flex-col gap-1 ${isToday ? 'bg-purple-50 hover:bg-purple-50' : ''}`}>
-                                <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-purple-600 text-white' : 'text-slate-700'}`}>
-                                    {day}
-                                </span>
+                            <div
+                                key={day}
+                                onClick={() => handleDayClick(day)}
+                                className={`bg-white relative p-2 min-h-[100px] hover:bg-slate-50 transition group flex flex-col gap-1 cursor-pointer ${isToday ? 'bg-purple-50 hover:bg-purple-50' : ''}`}
+                            >
+                                <div className="flex justify-between items-start">
+                                    <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-purple-600 text-white' : 'text-slate-700'}`}>
+                                        {day}
+                                    </span>
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-purple-100 text-purple-600 p-1 rounded">
+                                        <Plus className="h-3 w-3" />
+                                    </div>
+                                </div>
 
-                                <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-[120px] custom-scrollbar">
+                                <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-[120px] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
                                     {daysRequests.map(req => (
                                         <Link
                                             key={req.id}
                                             href={`/maintenance/requests/${req.id}`}
-                                            className={`text-[10px] p-1.5 rounded border border-l-2 shadow-sm transition hover:scale-[1.02] active:scale-95 block truncate
+                                            className={`text-[10px] p-1.5 rounded border border-l-2 shadow-sm transition-all hover:shadow-md hover:brightness-95 active:scale-95 block truncate
                                                 ${req.priority === '3' ? 'bg-red-50 border-slate-200 border-l-red-500 text-red-700' :
                                                     req.priority === '2' ? 'bg-orange-50 border-slate-200 border-l-orange-500 text-orange-700' :
                                                         'bg-white border-slate-200 border-l-purple-500 text-slate-700'
@@ -108,8 +125,6 @@ export default function CalendarPage() {
                             </div>
                         );
                     })}
-
-                    {/* Empty cells for next month visual balance (optional, usually css grid handles it) */}
                 </div>
             </div>
         </div>

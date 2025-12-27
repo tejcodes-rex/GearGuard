@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { ChevronDown, Search, Plus, Menu, X } from "lucide-react";
 
 export function TopNav() {
@@ -12,6 +13,9 @@ export function TopNav() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [equipmentOpen, setEquipmentOpen] = useState(false);
     const [reportingOpen, setReportingOpen] = useState(false); // Kept for state consistency, though CSS hover used for desktop
+
+    const { user, logout } = useAuth();
+    const [profileOpen, setProfileOpen] = useState(false);
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
@@ -107,9 +111,46 @@ export function TopNav() {
                     </nav>
                 </div>
 
-                <div className="ml-auto flex items-center gap-4">
-                    <span className="hidden md:inline text-sm text-slate-300">Mitchell Admin</span>
-                    <img src="https://github.com/shadcn.png" className="w-8 h-8 rounded-full border border-slate-600" />
+                <div className="ml-auto flex items-center h-full">
+                    {/* User Profile Dropdown */}
+                    <div className="relative h-full">
+                        <button
+                            onClick={() => setProfileOpen(!profileOpen)}
+                            className="flex items-center gap-2 px-3 h-full hover:bg-slate-800 transition-colors"
+                        >
+                            <span className="hidden md:inline text-sm text-slate-300">{user?.name || 'Mitchell Admin'}</span>
+                            <img src="https://github.com/shadcn.png" className="w-7 h-7 rounded-full border border-slate-600 shadow-sm" alt="Avatar" />
+                            <ChevronDown className={clsx("h-3 w-3 text-slate-400 transition-transform", profileOpen && "rotate-180")} />
+                        </button>
+
+                        {profileOpen && (
+                            <>
+                                {/* Overlay to close */}
+                                <div className="fixed inset-0 z-[90]" onClick={() => setProfileOpen(false)}></div>
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-[100] animate-in fade-in zoom-in duration-200">
+                                    <div className="px-4 py-2 border-b border-slate-100">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
+                                        <p className="text-sm font-bold text-slate-900">{user?.name || 'Mitchell Admin'}</p>
+                                    </div>
+                                    <div className="py-1">
+                                        <Link href="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">My Profile</Link>
+                                        <Link href="/maintenance/configuration" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">Settings</Link>
+                                    </div>
+                                    <div className="border-t border-slate-100 pt-1">
+                                        <button
+                                            onClick={() => {
+                                                setProfileOpen(false);
+                                                logout();
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50 transition-colors outline-none"
+                                        >
+                                            Log out
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -126,32 +167,17 @@ export function TopNav() {
                     <Link href="/reports" className="block py-2 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Reporting</Link>
                     <Link href="/teams" className="block py-2 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Teams</Link>
                     <Link href="/configuration/categories" className="block py-2 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Configuration</Link>
+                    <div className="border-t border-slate-700 mt-2 pt-2">
+                        <button
+                            onClick={() => window.location.href = '/login'}
+                            className="block w-full text-left py-2 text-red-400 font-bold hover:text-red-300 transition-colors"
+                        >
+                            Log out
+                        </button>
+                    </div>
                 </div>
             )}
 
-            {/* Sub Header (Contextual) - Only on Dashboard for now as per req "Search Bar... centered" */}
-            {pathname === "/" && (
-                <div className="px-4 py-3 bg-white border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="w-full md:w-auto flex justify-between md:justify-start">
-                        <Link href="/maintenance/requests/new" className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
-                            <Plus className="h-4 w-4" /> New
-                        </Link>
-                    </div>
-
-                    <div className="flex-1 w-full md:max-w-2xl mx-auto relative md:px-8">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="hidden md:block w-[100px]"></div> {/* Spacer for center alignment */}
-                </div>
-            )}
         </div>
     );
 }

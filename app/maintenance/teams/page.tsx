@@ -1,8 +1,11 @@
+"use client";
+
 import { useState } from "react";
 import { useApp } from "@/context/AppDataContext";
 import { User, Mail, Phone, Search } from "lucide-react";
 
 export default function TeamsPage() {
+    const { teams } = useApp();
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredTeams = teams.filter(team =>

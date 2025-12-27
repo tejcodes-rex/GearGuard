@@ -9,7 +9,8 @@ interface AppContextType {
     requests: MaintenanceRequest[];
     workCenters: WorkCenter[];
     addRequest: (request: Omit<MaintenanceRequest, "id" | "createdAt">) => void;
-    updateRequest: (id: string, store: Partial<MaintenanceRequest>) => void;
+    deleteRequest: (id: string) => void;
+    updateRequest: (id: string, data: Partial<MaintenanceRequest>) => void;
     updateEquipment: (id: string, data: Partial<Equipment>) => void;
     addWorkCenter: (data: Omit<WorkCenter, "id">) => void;
     updateWorkCenter: (id: string, data: Partial<WorkCenter>) => void;
@@ -250,6 +251,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         );
     };
 
+    const deleteRequest = (id: string) => {
+        setRequests((prev) => prev.filter((req) => req.id !== id));
+    };
+
     const updateEquipment = (id: string, data: Partial<Equipment>) => {
         setEquipment((prev) =>
             prev.map((eq) => (eq.id === id ? { ...eq, ...data } : eq))
@@ -284,6 +289,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 requests,
                 workCenters,
                 addRequest,
+                deleteRequest,
                 updateRequest,
                 updateEquipment,
                 addWorkCenter,

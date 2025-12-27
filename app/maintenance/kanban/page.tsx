@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { useApp } from "@/context/AppDataContext";
 import { RequestStatus } from "@/types";
-import { Plus, Clock, User, Search } from "lucide-react";
+import { Search, Plus, Filter, LayoutGrid, List, MoreVertical, Star, Clock, AlertCircle, Trash2, User } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -12,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 const COLUMNS: RequestStatus[] = ["New", "In Progress", "Repaired", "Scrap"];
 
 function KanbanBoard() {
-    const { requests, updateRequest, getTeamById, getEquipmentById, getWorkCenterById, getMemberById } = useApp();
+    const { requests, updateRequest, deleteRequest, getTeamById, getEquipmentById, getWorkCenterById, getMemberById } = useApp();
     const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [isBrowser, setIsBrowser] = useState(false);
@@ -145,14 +145,27 @@ function KanbanBoard() {
                                                                         isOverdue ? "border-l-4 border-l-red-500" : ""
                                                                     )}
                                                                 >
-                                                                    <div className="mb-2">
-                                                                        <span className="inline-block text-sm font-medium text-slate-900 line-clamp-2">
+                                                                    <div className="mb-2 flex items-start justify-between">
+                                                                        <span className="inline-block text-sm font-medium text-slate-900 line-clamp-2 pr-6">
                                                                             {req.subject}
                                                                         </span>
-                                                                        <p className="text-[10px] text-slate-400 mt-1">
-                                                                            Created By: Mitchell Admin
-                                                                        </p>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                if (window.confirm(`Are you sure you want to delete "${req.subject}"?`)) {
+                                                                                    deleteRequest(req.id);
+                                                                                }
+                                                                            }}
+                                                                            className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-md transition-all opacity-0 group-hover:opacity-100"
+                                                                            title="Delete Request"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
                                                                     </div>
+                                                                    <p className="text-[10px] text-slate-400 mt-1">
+                                                                        Created By: Mitchell Admin
+                                                                    </p>
 
                                                                     <div className="mb-3 flex items-center gap-2 text-xs text-slate-500">
                                                                         <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600">

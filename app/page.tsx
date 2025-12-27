@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { useApp } from "@/context/AppDataContext";
 import { DashboardCard } from "@/components/DashboardCard";
 import { AlertTriangle, Users, ClipboardList, Activity, Search, Plus } from "lucide-react";
 
 export default function Home() {
+  const { requests, equipment } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Metrics Logic

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useApp } from "@/context/AppDataContext";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function EquipmentPage() {
+    const { equipment } = useApp();
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredEquipment = equipment.filter(eq =>
@@ -49,6 +50,7 @@ export default function EquipmentPage() {
                             <th className="px-6 py-3">Category</th>
                             <th className="px-6 py-3">Status</th>
                             <th className="px-6 py-3">Location</th>
+                            <th className="px-6 py-3 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -64,6 +66,15 @@ export default function EquipmentPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-3 text-slate-600">{eq.location}</td>
+                                    <td className="px-6 py-3 text-right">
+                                        <Link
+                                            href={`/maintenance/equipment/${eq.id}`}
+                                            className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-slate-100 rounded transition-colors inline-block"
+                                            title="View Details"
+                                        >
+                                            <Settings className="h-4 w-4" />
+                                        </Link>
+                                    </td>
                                 </tr>
                             ))
                         ) : (

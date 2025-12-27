@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppDataContext";
 import { MaintenanceRequest, RequestStatus } from "@/types";
-import { ArrowLeft, Save, ClipboardList, Plus, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, ClipboardList, Plus, Star, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/Toast";
 
 const STAGES: RequestStatus[] = ["New", "In Progress", "Repaired", "Scrap"];
@@ -12,7 +12,7 @@ const STAGES: RequestStatus[] = ["New", "In Progress", "Repaired", "Scrap"];
 export default function RequestDetailPage() {
     const { id } = useParams();
     const router = useRouter();
-    const { requests, workCenters, equipment, teams, updateRequest, addRequest } = useApp();
+    const { requests, workCenters, equipment, teams, updateRequest, addRequest, deleteRequest, getEquipmentById, getTeamById } = useApp();
 
     const [request, setRequest] = useState<MaintenanceRequest | null>(null);
     const [formData, setFormData] = useState<Partial<MaintenanceRequest>>({});
@@ -53,14 +53,16 @@ export default function RequestDetailPage() {
                 status: 'New',
                 type: 'Corrective',
                 createdAt: new Date().toISOString(),
-                priority: '0'
+                priority: '0',
+                duration: 0
             } as MaintenanceRequest);
             setFormData({
                 subject: '',
                 maintenanceFor: 'equipment',
                 type: 'Corrective',
                 status: 'New',
-                priority: '0'
+                priority: '0',
+                duration: 0
             });
         } else {
             const found = requests.find(r => r.id === id);
@@ -70,6 +72,21 @@ export default function RequestDetailPage() {
             }
         }
     }, [id, requests, isNew]);
+
+    // Auto-Fill Logic: Equipment -> Team
+    useEffect(() => {
+        if (formData.equipmentId && isNew) {
+            const eq = getEquipmentById(formData.equipmentId);
+            if (eq && !formData.teamId) {
+                setFormData(prev => ({ ...prev, teamId: eq.teamId }));
+                showToast(`Automatically assigned to ${getTeamById(eq.teamId)?.name}`, "success");
+            }
+        }
+    }, [formData.equipmentId, isNew, getEquipmentById, getTeamById, showToast]);
+
+    // Filter Technicians by Selected Team
+    const activeTeam = getTeamById(formData.teamId || '');
+    const teamTechnicians = activeTeam?.members || [];
 
     if (!request) return <div>Loading...</div>;
 
@@ -106,6 +123,13 @@ export default function RequestDetailPage() {
         if (!formData.teamId) newErrors.teamId = true;
         if (formData.maintenanceFor === 'equipment' && !formData.equipmentId) newErrors.equipmentId = true;
         if (formData.maintenanceFor === 'work_center' && !formData.workCenterId) newErrors.workCenterId = true;
+
+        if (formData.status === 'Repaired' && (!formData.duration || formData.duration <= 0)) {
+            newErrors.duration = true;
+            showToast("Duration (Hours) is required to complete repair.", "error");
+            setErrors(newErrors);
+            return;
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -177,18 +201,30 @@ export default function RequestDetailPage() {
                             </button>
                         </>
                     ) : (
-                        <>
-                            {/* Standard Actions when Viewing */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    if (window.confirm(`Are you sure you want to delete this request: "${request.subject}"?`)) {
+                                        deleteRequest(request.id);
+                                        showToast("Request deleted successfully", "success");
+                                        router.push("/maintenance/kanban");
+                                    }
+                                }}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Request"
+                            >
+                                <Trash2 className="h-5 w-5" />
+                            </button>
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                className="rounded-lg bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
                             >
                                 Edit
                             </button>
                             <a href="/maintenance/requests/new" className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-all shadow-sm hover:shadow active:scale-95">
                                 <Plus className="h-4 w-4" /> New
                             </a>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
@@ -504,20 +540,33 @@ export default function RequestDetailPage() {
                                 onChange={e => handleChange('technicianId', e.target.value)}
                             >
                                 <option value="">Select Technician...</option>
-                                {teams.flatMap(t => t.members).map(m => (
+                                {teamTechnicians.length > 0 ? teamTechnicians.map(m => (
                                     <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
-                                ))}
+                                )) : (
+                                    <option value="" disabled>No technicians in this team</option>
+                                )}
                             </select>
                         ) : (
                             <div className="col-span-2 text-sm text-slate-900">
-                                {teams.flatMap(t => t.members).find(m => m.id === request.technicianId)?.name || 'Unassigned'}
+                                {teamTechnicians.find(m => m.id === request.technicianId)?.name || 'Unassigned'}
                             </div>
                         )}
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-4">
                         <label className="text-sm font-bold text-slate-700">Scheduled Date</label>
-                        <div className="col-span-2 text-sm text-slate-900">12/28/2025 14:30:00</div>
+                        {isEditing ? (
+                            <input
+                                type="datetime-local"
+                                className="col-span-2 rounded border border-slate-300 px-3 py-1.5 text-sm"
+                                value={formData.scheduledDate?.slice(0, 16) || ''}
+                                onChange={e => handleChange('scheduledDate', e.target.value)}
+                            />
+                        ) : (
+                            <div className="col-span-2 text-sm text-slate-900">
+                                {request.scheduledDate ? new Date(request.scheduledDate).toLocaleString() : 'Not Scheduled'}
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-4">
@@ -526,11 +575,13 @@ export default function RequestDetailPage() {
                             <div className="col-span-2 flex items-center gap-2">
                                 <input
                                     type="number"
-                                    className="w-20 rounded border border-slate-300 px-2 py-1 text-sm"
+                                    min="0"
+                                    step="0.5"
+                                    className="w-24 rounded border border-slate-300 px-3 py-1.5 text-sm"
                                     value={formData.duration || 0}
-                                    onChange={e => handleChange('duration', parseFloat(e.target.value))}
+                                    onChange={e => handleChange('duration', parseFloat(e.target.value) || 0)}
                                 />
-                                <span className="text-sm text-slate-500">hours</span>
+                                <span className="text-sm text-slate-500 font-medium">hours</span>
                             </div>
                         ) : (
                             <div className="col-span-2 text-sm text-slate-900">{request.duration || 0} hours</div>
