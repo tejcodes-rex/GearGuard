@@ -11,14 +11,14 @@ export default function Home() {
   const openRequests = requests.filter((r) => r.status !== "Repaired" && r.status !== "Scrap");
   const completedRequests = requests.filter(r => r.status === 'Repaired');
   const overdueRequests = openRequests.filter((r) => {
-    // Simple logic: if priority is High or created > 7 days ago
-    if (r.priority === 'High') return true;
+    // Simple logic: if priority is High (2) or Urgent (3) or created > 7 days ago
+    if (r.priority >= '2') return true;
     const created = new Date(r.createdAt);
     const isOld = (Date.now() - created.getTime()) > 1000 * 60 * 60 * 24 * 7;
     return isOld;
   });
 
-  const criticalEquipmentCount = requests.filter(r => r.priority === 'High').length; // Proxy for health
+  const criticalEquipmentCount = requests.filter(r => r.priority >= '2').length; // Proxy for health
 
   // Hardcoded for demo/mockup alignment if needed, but dynamic is better
   const technicianLoad = 85;

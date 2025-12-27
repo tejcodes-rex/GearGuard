@@ -150,7 +150,7 @@ const MOCK_REQUESTS: MaintenanceRequest[] = [
         status: "New",
         type: "Corrective",
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        priority: "High",
+        priority: "2",
     },
     {
         id: "r2",

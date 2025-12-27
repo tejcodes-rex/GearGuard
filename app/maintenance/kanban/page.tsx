@@ -88,7 +88,7 @@ function KanbanBoard() {
                                                     const technician = req.technicianId && team
                                                         ? getMemberById(team.id, req.technicianId)
                                                         : null;
-                                                    const isOverdue = req.priority === 'High';
+                                                    const isOverdue = (req.priority || '0') >= '2';
 
                                                     return (
                                                         <Draggable key={req.id} draggableId={req.id} index={index}>

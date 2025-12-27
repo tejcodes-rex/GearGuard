@@ -59,6 +59,6 @@ export interface MaintenanceRequest {
   duration?: number; // Hours
   createdAt: string;
   description?: string;
-  priority?: 'Normal' | 'High';
+  priority?: '0' | '1' | '2' | '3';
   kanbanState?: 'normal' | 'blocked' | 'done';
 }

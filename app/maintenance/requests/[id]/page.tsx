@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppDataContext";
 import { MaintenanceRequest, RequestStatus } from "@/types";
-import { ArrowLeft, Save, ClipboardList, Plus } from "lucide-react";
+import { ArrowLeft, Save, ClipboardList, Plus, Star } from "lucide-react";
 
 const STAGES: RequestStatus[] = ["New", "In Progress", "Repaired", "Scrap"];
 
@@ -32,14 +32,14 @@ export default function RequestDetailPage() {
                 status: 'New',
                 type: 'Corrective',
                 createdAt: new Date().toISOString(),
-                priority: 'Normal'
+                priority: '0'
             } as MaintenanceRequest);
             setFormData({
                 subject: '',
                 maintenanceFor: 'equipment',
                 type: 'Corrective',
                 status: 'New',
-                priority: 'Normal'
+                priority: '0'
             });
         } else {
             const found = requests.find(r => r.id === id);
@@ -323,7 +323,27 @@ export default function RequestDetailPage() {
 
                     <div className="grid grid-cols-3 items-center gap-4">
                         <label className="text-sm font-bold text-slate-700">Priority</label>
-                        <div className="col-span-2 text-slate-400">◇ ◇ ◇</div>
+                        <div className="col-span-2 flex items-center gap-1">
+                            {['1', '2', '3'].map((level) => (
+                                <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => {
+                                        const current = formData.priority || '0';
+                                        handleChange('priority', current === level ? '0' : level);
+                                    }}
+                                    className="focus:outline-none transition-transform active:scale-90"
+                                    title={`Priority ${level}`}
+                                >
+                                    <Star
+                                        className={`w-5 h-5 ${(formData.priority || '0') >= level
+                                            ? 'fill-yellow-400 text-yellow-400'
+                                            : 'text-slate-300 hover:text-yellow-200'
+                                            }`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-4">
