@@ -111,6 +111,16 @@ export default function RequestDetailPage() {
                             </a>
                         </>
                     )}
+
+                    {!isNew && (
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Auto-Saved
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -355,7 +365,12 @@ export default function RequestDetailPage() {
                 {/* Notes Section at Bottom */}
                 <div className="col-span-1 md:col-span-2 mt-8 border-t border-slate-100 pt-6">
                     <h3 className="text-sm font-bold text-slate-900 mb-2">Notes</h3>
-                    <textarea className="w-full h-24 rounded border border-slate-200 p-2 text-sm" placeholder="Add additional notes here..."></textarea>
+                    <textarea
+                        className="w-full h-24 rounded border border-slate-200 p-2 text-sm"
+                        placeholder="Add additional notes here..."
+                        value={formData.description || ''}
+                        onChange={e => handleChange('description', e.target.value)}
+                    ></textarea>
                 </div>
             </div>
         </div>
