@@ -17,10 +17,27 @@ function KanbanBoard() {
     const [isBrowser, setIsBrowser] = useState(false);
 
     // Filter Logic
+    // Filter Logic
     const equipmentIdFilter = searchParams.get("equipmentId");
-    const filteredRequests = equipmentIdFilter
-        ? requests.filter(r => r.equipmentId === equipmentIdFilter)
-        : requests;
+    const filterType = searchParams.get("filter");
+
+    let filteredRequests = requests;
+
+    if (equipmentIdFilter) {
+        filteredRequests = filteredRequests.filter(r => r.equipmentId === equipmentIdFilter);
+    }
+
+    if (filterType === 'critical') {
+        filteredRequests = filteredRequests.filter(r => (r.priority || '0') === '3');
+    } else if (filterType === 'high_priority') {
+        filteredRequests = filteredRequests.filter(r => (r.priority || '0') >= '2');
+    } else if (filterType === 'my_requests') {
+        // Mock "My Requests" - assuming Mitchell Admin is the user
+        // In a real app we'd compare against currentUser.id
+        filteredRequests = filteredRequests.filter(r => true); // For now show all, or filter by 'Mitchell Admin' if we store creator
+    } else if (filterType === 'todo') {
+        filteredRequests = filteredRequests.filter(r => r.status !== 'Repaired' && r.status !== 'Scrap');
+    }
 
     useEffect(() => {
         setIsBrowser(true);
@@ -43,7 +60,9 @@ function KanbanBoard() {
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">Maintenance Requests</h1>
-                    {equipmentIdFilter && <p className="text-sm text-slate-500">Filtered by equipment ID: {equipmentIdFilter}</p>}
+                    {equipmentIdFilter && <p className="text-sm text-slate-500">Filtered by Equipment ID: {equipmentIdFilter}</p>}
+                    {filterType === 'critical' && <p className="text-sm text-red-600 font-medium">Filtered by: Critical Priority</p>}
+                    {filterType === 'todo' && <p className="text-sm text-slate-500">Filtered by: To Do</p>}
                 </div>
                 <Link
                     href="/maintenance/requests/new"
