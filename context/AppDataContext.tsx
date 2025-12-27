@@ -222,9 +222,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [workCenters, isInitialized]);
 
     const addRequest = (request: Omit<MaintenanceRequest, "id" | "createdAt">) => {
+        // Industrial Grade: Generate meaningful Sequence ID (REQ-000X)
+        const nextId = `REQ-${(requests.length + 1).toString().padStart(4, '0')}`;
+
         const newRequest: MaintenanceRequest = {
             ...request,
-            id: Math.random().toString(36).substr(2, 9),
+            id: nextId,
             createdAt: new Date().toISOString(),
         };
         setRequests((prev) => [...prev, newRequest]);

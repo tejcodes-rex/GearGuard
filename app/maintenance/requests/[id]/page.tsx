@@ -496,7 +496,23 @@ export default function RequestDetailPage() {
 
                     <div className="grid grid-cols-3 items-center gap-4">
                         <label className="text-sm font-bold text-slate-700">Technician</label>
-                        <div className="col-span-2 text-sm text-slate-900">Mitchell Admin</div>
+                        {isEditing ? (
+                            <select
+                                className="col-span-2 rounded border border-slate-300 px-3 py-1.5 text-sm"
+                                value={formData.technicianId || ''}
+                                // Auto-assign team if not set? No, keep simple. 
+                                onChange={e => handleChange('technicianId', e.target.value)}
+                            >
+                                <option value="">Select Technician...</option>
+                                {teams.flatMap(t => t.members).map(m => (
+                                    <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div className="col-span-2 text-sm text-slate-900">
+                                {teams.flatMap(t => t.members).find(m => m.id === request.technicianId)?.name || 'Unassigned'}
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-4">
