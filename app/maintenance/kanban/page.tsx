@@ -121,6 +121,17 @@ function KanbanBoard() {
 
                                                                     <div className="flex items-center justify-between">
                                                                         <div className="flex items-center gap-2">
+                                                                            {/* Kanban State Dot */}
+                                                                            {req.kanbanState && req.kanbanState !== 'normal' && (
+                                                                                <div
+                                                                                    className={clsx(
+                                                                                        "h-3 w-3 rounded-full border border-white shadow-sm ring-1 ring-slate-200",
+                                                                                        req.kanbanState === 'blocked' ? "bg-red-500" : "bg-green-500"
+                                                                                    )}
+                                                                                    title={req.kanbanState === 'blocked' ? 'Blocked' : 'Ready'}
+                                                                                />
+                                                                            )}
+
                                                                             {isOverdue && (
                                                                                 <div className="flex items-center gap-1 text-[10px] font-bold uppercase text-red-600">
                                                                                     <Clock className="h-3 w-3" />
