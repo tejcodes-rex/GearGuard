@@ -266,23 +266,27 @@ export default function RequestDetailPage() {
                     {/* Kanban State Indicators */}
                     <div className="flex items-center gap-2" title="Kanban State">
                         <button
-                            onClick={() => isEditing && handleChange('kanbanState', 'normal')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'normal' || !(isEditing ? formData.kanbanState : request.kanbanState) ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
-                            title="In Progress"
+                            onClick={() => {
+                                if (!isEditing) return;
+                                const current = formData.kanbanState || request.kanbanState || 'normal';
+                                const nextState = current === 'normal' ? 'blocked' : current === 'blocked' ? 'done' : 'normal';
+                                handleChange('kanbanState', nextState);
+                            }}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all 
+                                ${(isEditing ? formData.kanbanState : request.kanbanState) === 'blocked'
+                                    ? 'bg-red-500 border-red-600 ring-2 ring-red-100'
+                                    : (isEditing ? formData.kanbanState : request.kanbanState) === 'done'
+                                        ? 'bg-green-500 border-green-600 ring-2 ring-green-100'
+                                        : 'bg-white border-slate-400 hover:border-slate-500'
+                                } 
+                                ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer hover:scale-110 active:scale-95'}
+                            `}
+                            title={isEditing ? "Click to change status (Normal -> Blocked -> Ready)" : "Kanban Status"}
                             disabled={!isEditing}
                         />
-                        <button
-                            onClick={() => isEditing && handleChange('kanbanState', 'blocked')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
-                            title="Blocked"
-                            disabled={!isEditing}
-                        />
-                        <button
-                            onClick={() => isEditing && handleChange('kanbanState', 'done')}
-                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${(isEditing ? formData.kanbanState : request.kanbanState) === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'} ${!isEditing ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
-                            title="Ready for Next Stage"
-                            disabled={!isEditing}
-                        />
+                        <span className="text-xs font-medium text-slate-600 capitalize">
+                            {(isEditing ? formData.kanbanState : request.kanbanState) === 'done' ? 'Ready' : (isEditing ? formData.kanbanState : request.kanbanState) || 'Normal'}
+                        </span>
                     </div>
                 </div>
             </div>
