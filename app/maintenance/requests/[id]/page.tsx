@@ -58,11 +58,18 @@ export default function RequestDetailPage() {
 
     // Handlers
     const handleStageClick = (stage: RequestStatus) => {
+        // Industry Grade: Safety Check for Destructive Actions
+        if (stage === 'Scrap' && request?.status !== 'Scrap') {
+            const confirmScrap = window.confirm("⚠️ Are you sure you want to SCRAP this equipment? This will permanently mark the equipment as active wreck/scrap.");
+            if (!confirmScrap) return;
+        }
+
         if (isNew) {
             setFormData(prev => ({ ...prev, status: stage }));
             setRequest(prev => prev ? ({ ...prev, status: stage }) : null);
         } else {
             updateRequest(request.id, { status: stage });
+            showToast(`Status updated to ${stage}`, "success");
         }
     };
 
