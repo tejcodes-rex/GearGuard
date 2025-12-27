@@ -121,64 +121,64 @@ export default function RequestDetailPage() {
             </div>
 
             {/* Smart Button & Stages Row */}
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row items-start justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
 
-                    {/* Smart Button */}
-                    <button
-                        onClick={() => setShowWorksheet(!showWorksheet)}
-                        className={`w-full md:w-auto flex items-center justify-center md:justify-start gap-3 px-4 py-2 rounded-lg border transition-colors ${showWorksheet ? 'bg-purple-100 border-purple-200 text-purple-700' : 'bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100'}`}
-                    >
-                        <ClipboardList className="h-5 w-5" />
-                        <div className="flex flex-col items-start leading-tight">
-                            <span className="text-xs font-bold uppercase">Worksheet</span>
-                            <span className="text-xs opacity-70">Comments</span>
-                        </div>
-                    </button>
-
-                    {/* Stages Widget */}
-                    <div className="w-full md:w-auto flex flex-col items-center md:items-end gap-2 overflow-x-auto">
-                        <div className="flex items-center w-full md:w-auto overflow-x-auto">
-                            {STAGES.map((stage, idx) => {
-                                const isActive = request.status === stage;
-                                const isPast = STAGES.indexOf(request.status) > idx;
-
-                                return (
-                                    <button
-                                        key={stage}
-                                        onClick={() => handleStageClick(stage)}
-                                        className={`
-                                            whitespace-nowrap relative px-4 md:px-6 py-2 text-sm font-medium border-y border-r border-slate-200 first:border-l first:rounded-l-lg last:rounded-r-lg
-                                            ${isActive ? 'bg-purple-600 text-white border-purple-600 z-10' : ''}
-                                            ${isPast ? 'bg-purple-50 text-purple-700' : ''}
-                                            ${!isActive && !isPast ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : ''}
-                                        `}
-                                    >
-                                        {stage}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                {/* Smart Button */}
+                <button
+                    onClick={() => setShowWorksheet(!showWorksheet)}
+                    className={`w-full md:w-auto flex items-center justify-center md:justify-start gap-3 px-4 py-2 rounded-lg border transition-colors ${showWorksheet ? 'bg-purple-100 border-purple-200 text-purple-700' : 'bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100'}`}
+                >
+                    <ClipboardList className="h-5 w-5" />
+                    <div className="flex flex-col items-start leading-tight">
+                        <span className="text-xs font-bold uppercase">Worksheet</span>
+                        <span className="text-xs opacity-70">Comments</span>
                     </div>
-                </div>
+                </button>
 
-                {/* Separate Box for Kanban State Indicators */}
-                <div className="flex items-center justify-end gap-4 bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm">
-                    <span className="text-sm font-medium text-slate-500">Kanban State:</span>
-                    <div className="flex items-center gap-3">
+                {/* Stages & Kanban State */}
+                <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-4">
+
+                    {/* States Widget */}
+                    <div className="flex items-center overflow-x-auto max-w-full">
+                        {STAGES.map((stage, idx) => {
+                            const isActive = request.status === stage;
+                            const isPast = STAGES.indexOf(request.status) > idx;
+
+                            return (
+                                <button
+                                    key={stage}
+                                    onClick={() => handleStageClick(stage)}
+                                    className={`
+                                        whitespace-nowrap relative px-4 py-2 text-sm font-medium border-y border-r border-slate-200 first:border-l first:rounded-l-lg last:rounded-r-lg
+                                        ${isActive ? 'bg-purple-600 text-white border-purple-600 z-10' : ''}
+                                        ${isPast ? 'bg-purple-50 text-purple-700' : ''}
+                                        ${!isActive && !isPast ? 'bg-slate-50 text-slate-600 hover:bg-slate-100' : ''}
+                                    `}
+                                >
+                                    {stage}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Divider (Desktop Only) */}
+                    <div className="hidden md:block h-8 w-px bg-slate-200"></div>
+
+                    {/* Kanban State Indicators */}
+                    <div className="flex items-center gap-2" title="Kanban State">
                         <button
                             onClick={() => handleChange('kanbanState', 'normal')}
-                            className={`w-6 h-6 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'normal' || !request.kanbanState ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'normal' || !request.kanbanState ? 'bg-white border-slate-400 ring-2 ring-slate-400' : 'bg-white border-slate-300 hover:border-slate-400'}`}
                             title="In Progress"
                         />
                         <button
                             onClick={() => handleChange('kanbanState', 'blocked')}
-                            className={`w-6 h-6 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'blocked' ? 'bg-red-500 border-red-600 ring-2 ring-red-500' : 'bg-red-200 border-red-300 hover:bg-red-500'}`}
                             title="Blocked"
                         />
                         <button
                             onClick={() => handleChange('kanbanState', 'done')}
-                            className={`w-6 h-6 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'}`}
+                            className={`w-5 h-5 rounded-full border ring-offset-1 transition-all ${request.kanbanState === 'done' ? 'bg-green-500 border-green-600 ring-2 ring-green-500' : 'bg-green-200 border-green-300 hover:bg-green-500'}`}
                             title="Ready for Next Stage"
                         />
                     </div>
@@ -311,7 +311,12 @@ export default function RequestDetailPage() {
                     <div className="grid grid-cols-3 items-center gap-4">
                         <label className="text-sm font-bold text-slate-700">Duration</label>
                         <div className="col-span-2 flex items-center gap-2">
-                            <input type="number" className="w-20 rounded border border-slate-300 px-2 py-1 text-sm" value="00" />
+                            <input
+                                type="number"
+                                className="w-20 rounded border border-slate-300 px-2 py-1 text-sm"
+                                value={formData.duration || 0}
+                                onChange={e => handleChange('duration', parseFloat(e.target.value))}
+                            />
                             <span className="text-sm text-slate-500">hours</span>
                         </div>
                     </div>

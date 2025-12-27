@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased h-screen overflow-hidden bg-slate-50`}>
+      <body className={`${inter.className} antialiased h-screen overflow-auto bg-slate-50`}>
         <Providers>
           {children}
         </Providers>
