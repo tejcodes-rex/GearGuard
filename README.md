@@ -50,11 +50,6 @@ GearGuard is a modern, responsive, and feature-rich Maintenance Management Syste
 4.  **Open the app**:
     Visit [http://localhost:3000](http://localhost:3000)
 
-## 🔐 Credentials (Mock Data)
-
-Since this is a demo application with client-side state:
-- **Email**: `admin@gearguard.com` (or create a new one)
-- **Password**: `Password@123`
 
 ---
 
